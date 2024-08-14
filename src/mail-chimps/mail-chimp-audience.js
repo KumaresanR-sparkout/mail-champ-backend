@@ -1,39 +1,9 @@
-const mailchimp = require("@mailchimp/mailchimp_marketing");
+const mailchimp = require("./config");
+
 const {
     successResponse,
     errorResponse
 } = require("../utils/response");
-
-//Mailchimp configurations
-mailchimp.setConfig({
-    apiKey: process.env.MAIL_CHIMP_API_KEY, //your mail chimp api key
-    server: process.env.MAIL_CHIMP_API_SERVER, ////your mail chimp server
-});
-
-//It checks the mail champ api connected are not
-const mailChimpHealthCheck = async (req, res) => {
-    try {
-        const response = await mailchimp.ping.get();
-        console.log(response);
-        return successResponse(res, 200, 'Mail champ health status', response)
-    } catch (error) {
-        console.error(error);
-        return errorResponse(res, 500, error.message);
-    }
-}
-
-//check user account permission
-const accountPermission = async (req, res) => {
-    try {
-        const response = await mailchimp.root.getRoot();
-        console.log(response);
-        return successResponse(res, 200, 'User mailchamp role permission', response);
-    } catch (error) {
-        console.error(error);
-        return errorResponse(res, 500, error.message);
-    }
-}
-
 
 // const event = {
 //     name: "Big sale"
@@ -116,10 +86,100 @@ const mailChimpAudience = async (req, res) => {
     }
 }
 
+//Get information about all lists in the account.
+const mailChimpAudienceLists = async (req, res) => {
+    try {
+        const audienceLists = await mailchimp.lists.getAllLists();
+        console.log(audienceLists);
+
+        return successResponse(res, 200, "Mail chimp audience lists", audienceLists);
+
+    } catch (error) {
+        console.error("Mailchimp API Error:", error.response ? error.response.body : error.message);
+        return errorResponse(res, 500, error.message);
+    }
+}
+
+//stay stuned because this one is not working, we will back soon...
+//for free plan we have one option to create audience lists 
+const createMailChampAudienceList = async (req, res) => {
+    try {
+        const {
+            NAME, ADDRESS1, CITY, ZIP, STATE, COUNTRY, MAIL_CHIMP_EMAIL_FOOTER,
+            COMPANY, CONTACT_NAME, EMAIL_ADDRESS, LANGUAGE, EMAIL_OPTION
+        } = process.env;
+
+        const response = await mailchimp.lists.createList({
+            name: NAME,
+            permission_reminder: MAIL_CHIMP_EMAIL_FOOTER,
+            email_type_option: false,
+            contact: {
+                company: COMPANY,
+                address1: ADDRESS1,
+                city: CITY,
+                country: COUNTRY,
+            },
+            campaign_defaults: {
+                from_name: CONTACT_NAME,
+                from_email: EMAIL_ADDRESS,
+                subject: "",
+                language: LANGUAGE,
+            },
+        });
+        console.log(response);
+        return successResponse(res, 200, 'Mailchimp audience create list', response);
+    } catch (error) {
+        console.error("Mailchimp API Error:", error.response ? error.response.body : error.message);
+        return errorResponse(res, 500, error.message);
+    }
+}
+
+//Get information about a specific list in your Mailchimp account.
+//Results include list members who have signed up but haven't confirmed their subscription yet 
+//and unsubscribed or cleaned.
+
+const mailChimpAudienceUserLists = async (req, res) => {
+    try {
+
+        const audienceLists = await mailchimp.lists.getList(process.env.MAIL_CHIMP_AUDIENCE_LIST_ID);
+
+        console.log(audienceLists);
+        return successResponse(res, 200, "Audience Lists", audienceLists);
+    } catch (error) {
+        console.error("Mailchimp API Error:", error.response ? error.response.body : error.message);
+        return errorResponse(res, 500, error.message);
+    }
+}
+
+const updateAudienceSettings = async (req, res) => {
+    try {
+        const {
+            NAME, ADDRESS1, CITY, ZIP, STATE, COUNTRY, MAIL_CHIMP_EMAIL_FOOTER,
+            COMPANY, CONTACT_NAME, EMAIL_ADDRESS, LANGUAGE, EMAIL_OPTION
+        } = process.env;
+
+        const response = await mailchimp.lists.updateList(process.env.MAIL_CHIMP_AUDIENCE_LIST_ID, {
+            name: NAME,
+            permission_reminder: MAIL_CHIMP_EMAIL_FOOTER,
+            email_type_option: false,
+            contact: {
+                company: COMPANY,
+                zip: ZIP
+            }
+        });
+        console.log(response);
+        return successResponse(res, 200, 'Updated mailchimp audience settings', response);
+    } catch (error) {
+        console.error("Mailchimp API Error:", error.response ? error.response.body : error.message);
+        return errorResponse(res, 500, error.message);
+    }
+}
 
 module.exports = {
-    mailChimpHealthCheck,
     mailChimpChampians,
     mailChimpAudience,
-    accountPermission
-}
+    mailChimpAudienceLists,
+    createMailChampAudienceList,
+    mailChimpAudienceUserLists,
+    updateAudienceSettings
+};
