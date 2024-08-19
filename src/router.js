@@ -27,9 +27,17 @@ const {
 const {
     updateStatusViaWebHook
 } = require("./mail-chimps/weeb-hook");
+
+const {
+    listMemberEvents,
+    createMemberEvents
+} = require("./mail-chimp-events/list-member-events");
 //routers
 const router = express.Router();
 
+router.get('/', (req, res) => {
+    return res.json({ message: "Application started working" });
+})
 router.post('/', (req, res) => {
     const { type, data } = req.body;
     console.log("webhook called");
@@ -48,7 +56,7 @@ router.get('/mailchimp-audience-user/lists', mailChimpAudienceUserLists);
 router.patch('/mailchimp-audience-settings', updateAudienceSettings);
 router.patch('/mailchimp-audience-user', updateAudienceMemberStatus);
 router.post("/webhook", updateStatusViaWebHook);
- 
-
+router.get("/mailchimp-member-event", listMemberEvents);
+router.post("/mailchimp-member-event", createMemberEvents);
 
 module.exports = router;
