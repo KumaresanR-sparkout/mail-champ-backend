@@ -30,8 +30,12 @@ const {
 //routers
 const router = express.Router();
 
-router.get('/', (req, res) => {
-    return res.json({ message: 'Application working...' });
+router.post('/', (req, res) => {
+    const { type, data } = req.body;
+    console.log("webhook called");
+    console.log("webhook type:", type);
+    console.log("whook data:", data);
+    return res.json({ message: 'webhook status accepted' });
 });
 
 router.get('/mailchimp-health', mailChimpHealthCheck);
@@ -44,6 +48,7 @@ router.get('/mailchimp-audience-user/lists', mailChimpAudienceUserLists);
 router.patch('/mailchimp-audience-settings', updateAudienceSettings);
 router.patch('/mailchimp-audience-user', updateAudienceMemberStatus);
 router.post("/webhook", updateStatusViaWebHook);
+ 
 
 
 module.exports = router;
