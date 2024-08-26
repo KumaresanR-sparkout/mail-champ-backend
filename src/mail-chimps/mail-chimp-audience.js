@@ -25,7 +25,7 @@ const {
 //     language: "EN_US"
 // };
 
-//
+//creates champians
 const mailChimpChampians = async (req, res) => {
     try {
 
